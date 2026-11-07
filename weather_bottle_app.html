@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Botella Meteorológica de @ProfeTuerca</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+  <!-- FontAwesome icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    body {
+      font-family: 'Quicksand', sans-serif;
+      user-select: none;
+      background-color: #0f172a;
+      overflow-x: hidden;
+    }
+    
+    .font-fredoka {
+      font-family: 'Fredoka', sans-serif;
+    }
+    
+    /* Scrollbar styling for search dropdown & zones list */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.8);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.5);
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(56, 189, 248, 0.8);
+    }
+    
+    /* Sky Backgrounds - Fixed gradients without color flickering */
+    .sky-sunny {
+      background: linear-gradient(to bottom, #38bdf8 0%, #7dd3fc 60%, #bae6fd 100%);
+    }
+    .sky-cloudy {
+      background: linear-gradient(to bottom, #64748b 0%, #94a3b8 60%, #cbd5e1 100%);
+    }
+    .sky-rainy {
+      background: linear-gradient(to bottom, #1e293b 0%, #334155 60%, #475569 100%);
+    }
+    .sky-stormy {
+      background: linear-gradient(to bottom, #0f172a 0%, #1e1b4b 60%, #312e81 100%);
+    }
+    .sky-snowy {
+      background: linear-gradient(to bottom, #475569 0%, #94a3b8 60%, #e2e8f0 100%);
+    }
+    .sky-cold {
+      background: linear-gradient(to bottom, #0284c7 0%, #38bdf8 60%, #e0f2fe 100%);
+    }
+
+    /* Grass section styling */
+    .grass-layer {
+      background: linear-gradient(to bottom, #4ade80 0%, #22c55e 40%, #16a34a 100%);
+    }
+
+    /* Underground Soil Layer */
+    .soil-layer {
+      background: #5c3a21;
+      background-image: 
+        radial-gradient(#7c4a27 15%, transparent 16%),
+        radial-gradient(#422817 15%, transparent 16%);
+      background-size: 20px 20px;
+      background-position: 0 0, 10px 10px;
+    }
+
+    /* Underground Root details */
+    .root-line {
+      stroke: #8b5a2b;
+      stroke-width: 3;
+      stroke-linecap: round;
+      fill: none;
+    }
+
+    /* Glass Bottle Effects */
+    .glass-bottle {
+      background: rgba(255, 255, 255, 0.15);
+      border: 4px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 
+        inset 0 0 15px rgba(255, 255, 255, 0.5),
+        0 0 25px rgba(56, 189, 248, 0.3);
+      backdrop-filter: blur(1px);
+    }
+
+    .water-fill {
+      background: linear-gradient(to bottom, #38bdf8 0%, #0284c7 100%);
+      transition: height 1.2s ease-in-out;
+      opacity: 0.88;
+    }
+
+    /* Bottle Textures for Weather */
+    .fog-full {
+      background: rgba(255, 255, 255, 0.88) !important;
+      backdrop-filter: blur(8px);
+    }
+    .fog-top {
+      background: linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 50%, rgba(255,255,255,0) 100%);
+      backdrop-filter: blur(4px);
+    }
+    
+    /* Grid lines for Snow mode inside bottle */
+    .snow-grid-lines {
+      background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.75) 2px, transparent 2px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.75) 2px, transparent 2px);
+      background-size: 16px 16px;
+    }
+
+    /* Lightning Flash Effect */
+    .lightning-flash {
+      background-color: rgba(255, 255, 255, 0.9);
+      pointer-events: none;
+    }
+
+    /* TV News Card Styling */
+    .tv-news-card {
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+    }
+    .tv-header-bar {
+      background: #1e3a8a;
+      border-bottom: 3px solid #0284c7;
+    }
+    .tv-content-bar {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    }
+    .tv-footer-bar {
+      background: #06b6d4;
+    }
+
+    /* TV 3-Day Card Styles inspired by photos */
+    .tv-day-card-1 {
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+    }
+    .tv-day-card-2 {
+      background: linear-gradient(180deg, #818cf8 0%, #4f46e5 100%);
+    }
+    .tv-day-card-3 {
+      background: linear-gradient(180deg, #f472b6 0%, #db2777 100%);
+    }
+  </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col items-center p-2 sm:p-4">
+
+  <div class="w-full max-w-5xl flex flex-col gap-4">
+    
+    <!-- Header: Search & Timer -->
+    <header class="bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl border border-slate-800 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4 z-40">
+      
+      <!-- Brand & Location -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center text-sky-400 text-xl shadow-inner">
+          <i class="fa-solid fa-bottle-droplet"></i>
+        </div>
+        <div>
+          <h1 class="text-lg font-bold font-fredoka tracking-wide text-white flex items-center gap-2">
+            La Botella Meteorológica
+            <span class="text-xs px-2 py-0.5 rounded-full bg-sky-500/20 text-sky-300 font-normal">@ProfeTuerca</span>
+          </h1>
+          <p id="current-location-text" class="text-xs text-slate-400 flex items-center gap-1">
+            <i class="fa-solid fa-location-dot text-sky-400"></i>
+            <span>Cargando ubicación...</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Search Input Container -->
+      <div class="relative w-full md:w-80">
+        <div class="relative flex items-center">
+          <input 
+            type="text" 
+            id="city-search" 
+            placeholder="Buscar ciudad, pueblo o villa..." 
+            class="w-full bg-slate-800/90 border border-slate-700 text-sm text-slate-100 placeholder-slate-400 rounded-xl pl-10 pr-10 py-2.5 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition-all"
+            autocomplete="off"
+          />
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 text-slate-400 text-sm"></i>
+          <button id="clear-search" class="hidden absolute right-3 text-slate-400 hover:text-slate-200">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <!-- Scrollable Search Results Dropdown -->
+        <div 
+          id="search-results" 
+          class="absolute left-0 right-0 top-full mt-2 bg-slate-800/95 border border-slate-700 rounded-xl shadow-2xl overflow-hidden hidden z-50 max-h-60 overflow-y-auto divide-y divide-slate-700/60"
+        ></div>
+      </div>
+
+      <!-- Auto-refresh Badge -->
+      <div class="flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700 text-xs text-slate-300">
+        <i class="fa-solid fa-rotate text-sky-400 animate-spin" style="animation-duration: 4s;"></i>
+        <span>Actualiza en <strong id="refresh-timer" class="text-sky-400 font-bold">60</strong>s</span>
+      </div>
+    </header>
+
+    <!-- Stage Container (Sky + Bottle Subterranean) -->
+    <main class="relative w-full h-[540px] rounded-3xl overflow-hidden shadow-2xl border border-slate-700/50 flex flex-col">
+      
+      <!-- Weather Canvas overlay for background particles -->
+      <canvas id="weather-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-10 bg-transparent"></canvas>
+      
+      <!-- Lightning overlay -->
+      <div id="lightning-overlay" class="absolute inset-0 pointer-events-none z-10 lightning-flash opacity-0 transition-opacity duration-150"></div>
+
+      <!-- SKY LAYER (Top 60%) -->
+      <div id="sky-background" class="relative w-full h-[60%] sky-sunny flex flex-col justify-between p-4 overflow-hidden">
+        
+        <!-- Sun/Moon element in sky -->
+        <div id="sun-element" class="absolute top-6 right-8 w-16 h-16 rounded-full bg-amber-300 shadow-[0_0_40px_rgba(253,224,71,0.8)] transition-all duration-700"></div>
+
+        <!-- TV News Style Wind Card -->
+        <div class="z-20 w-full max-w-[220px] sm:max-w-[260px] tv-news-card rounded-xl overflow-hidden border border-white/20">
+          <div class="tv-header-bar px-3 py-1.5 text-center">
+            <span id="tv-city-name" class="font-fredoka text-xs sm:text-sm font-bold tracking-wider text-white uppercase drop-shadow truncate block">
+              SANTIAGO
+            </span>
+          </div>
+          <div class="tv-content-bar p-2.5 flex items-center justify-between text-white">
+            <div class="flex flex-col items-start leading-none">
+              <span id="tv-wind-speed" class="font-fredoka text-2xl sm:text-3xl font-extrabold drop-shadow">0</span>
+              <span class="text-[9px] font-bold tracking-widest text-sky-200 mt-1">KM/H</span>
+            </div>
+            <div class="text-2xl sm:text-3xl text-white/90 animate-pulse">
+              <i class="fa-solid fa-wind"></i>
+            </div>
+          </div>
+          <div class="tv-footer-bar h-1.5 w-full"></div>
+        </div>
+
+        <!-- Landscape Props (House & Tree at Ground Level) -->
+        <div class="relative w-full h-16 z-10 flex justify-between items-end px-4 sm:px-12 pointer-events-none">
+          <!-- House -->
+          <div class="relative w-14 h-12">
+            <div class="w-0 h-0 border-l-[30px] border-l-transparent border-r-[30px] border-r-transparent border-b-[20px] border-b-amber-800 -ml-1.5"></div>
+            <div class="w-12 h-8 bg-amber-100 border border-amber-900/30 rounded-sm relative flex items-center justify-around px-1">
+              <div class="w-2.5 h-3 bg-sky-300 border border-slate-500 rounded-sm"></div>
+              <div class="w-2.5 h-5 bg-amber-800 rounded-t-sm self-end"></div>
+            </div>
+          </div>
+
+          <!-- Tree -->
+          <div class="relative flex flex-col items-center">
+            <div class="w-16 h-16 bg-emerald-600 rounded-full border-2 border-emerald-800 shadow-md relative -mb-3 z-10 flex items-center justify-center">
+              <div class="w-10 h-10 bg-emerald-500 rounded-full"></div>
+            </div>
+            <div class="w-4 h-8 bg-amber-900 rounded-sm"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRASS STRIP LAYER -->
+      <div class="w-full h-4 grass-layer border-t border-emerald-300/40 relative z-20 shadow-sm"></div>
+
+      <!-- SOIL LAYER & SUBTERRANEAN BOTTLE (Bottom 40%) -->
+      <div class="relative w-full h-[40%] soil-layer z-20 flex justify-center items-start pt-0 overflow-visible">
+        
+        <!-- Roots SVG -->
+        <svg class="absolute inset-0 w-full h-full pointer-events-none opacity-40" xmlns="http://www.w3.org/2000/svg">
+          <path d="M 20 0 Q 30 40 10 90" class="root-line" />
+          <path d="M 80 0 Q 70 50 100 110" class="root-line" />
+          <path d="M 85% 0 Q 80% 40 90% 80" class="root-line" />
+        </svg>
+
+        <!-- BOTTLE METEOROLÓGICA DE @PROFETUERCA -->
+        <div class="relative -top-56 w-32 sm:w-40 h-72 flex flex-col items-center z-30">
+          
+          <!-- UPPER BOTTLE BODY (In Sky) -->
+          <div id="bottle-top" class="w-full h-44 glass-bottle rounded-t-3xl relative overflow-hidden flex flex-col justify-end transition-all duration-700">
+            <div id="bottle-top-fog" class="absolute inset-x-0 top-0 h-1/2 fog-top opacity-0 transition-opacity duration-700 z-20 pointer-events-none"></div>
+            <div id="bottle-full-fog" class="absolute inset-0 fog-full opacity-0 transition-opacity duration-700 z-20 pointer-events-none"></div>
+            <div id="bottle-snow-grid" class="absolute inset-0 snow-grid-lines opacity-0 transition-opacity duration-700 z-20 pointer-events-none"></div>
+
+            <!-- Upper Water Fill -->
+            <div id="water-upper" class="w-full h-0 water-fill relative transition-all duration-1000 flex items-start justify-center overflow-hidden">
+              <div id="bubbles-container" class="absolute inset-0 pointer-events-none"></div>
+            </div>
+          </div>
+
+          <!-- BOTTLE NECK -->
+          <div class="w-10 h-8 glass-bottle border-y-0 relative overflow-hidden z-20 flex justify-center">
+            <div id="water-neck" class="w-full h-full water-fill"></div>
+          </div>
+
+          <!-- LOWER BOTTLE BASE (Buried Underground) -->
+          <div id="bottle-bottom" class="w-full h-36 glass-bottle rounded-b-3xl relative overflow-hidden flex flex-col justify-end border-t-0">
+            <div id="water-lower" class="w-full h-full water-fill relative"></div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- SECTION: CHILE NATURAL ZONES & 3-DAY FORECAST MENU -->
+    <section class="bg-slate-900/90 backdrop-blur-md p-4 rounded-3xl border border-slate-800 shadow-xl flex flex-col gap-4">
+      
+      <!-- Top Section Header & View Toggle (Hoy vs Próximos 3 días) -->
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="font-fredoka text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-map-location-dot text-sky-400"></i>
+            Zonas Naturales de Chile
+          </h2>
+          <p id="forecast-view-subtitle" class="text-xs text-slate-400">Pronóstico del tiempo en formato televisión</p>
+        </div>
+
+        <!-- Mode Toggle Switch: Hoy vs Próximos 3 Días -->
+        <div class="flex items-center bg-slate-950/80 p-1 rounded-2xl border border-slate-800 self-stretch sm:self-auto">
+          <button id="btn-view-today" class="flex-1 sm:flex-none px-4 py-1.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-white shadow-md">
+            Hoy
+          </button>
+          <button id="btn-view-3days" class="flex-1 sm:flex-none px-4 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200">
+            Próximos 3 Días
+          </button>
+        </div>
+      </div>
+
+      <!-- Selected City Highlighted 3-Day TV Card (Visible in "Próximos 3 Días" mode) -->
+      <div id="city-3day-highlight" class="hidden w-full bg-slate-950/80 border border-slate-800 rounded-2xl p-4 flex-col gap-3 shadow-inner">
+        <div class="flex items-center justify-between">
+          <span id="highlight-city-name" class="font-fredoka text-base font-bold text-sky-300 uppercase tracking-wide">
+            SANTIAGO - PRÓXIMOS 3 DÍAS
+          </span>
+          <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
+            Pronóstico Noticiero TV
+          </span>
+        </div>
+
+        <div id="highlight-3day-grid" class="grid grid-cols-3 gap-2 sm:gap-4">
+          <!-- 3 TV columns dynamic content -->
+        </div>
+      </div>
+
+      <!-- Zone Selection Tabs -->
+      <div class="flex gap-2 overflow-x-auto pb-2 border-b border-slate-800" id="zone-tabs">
+        <!-- Tabs populated via JS -->
+      </div>
+
+      <!-- Zone Cities Table (TV Graphic Style) -->
+      <div class="w-full overflow-hidden rounded-2xl border border-slate-800 bg-slate-950/60 shadow-inner">
+        <div id="zone-header" class="bg-gradient-to-r from-blue-900 via-indigo-900 to-sky-900 px-4 py-2.5 flex justify-between items-center border-b border-slate-700">
+          <span id="zone-title" class="font-fredoka text-sm sm:text-base font-bold text-sky-200 uppercase tracking-wide">
+            ZONA METROPOLITANA
+          </span>
+          <span id="zone-columns-label" class="text-xs font-semibold text-slate-300">Mín / Máx</span>
+        </div>
+
+        <div id="zone-cities-list" class="divide-y divide-slate-800/80 max-h-80 overflow-y-auto">
+          <!-- Cities rows dynamically populated -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer Credits -->
+    <footer class="text-center text-xs text-slate-500 py-2">
+      Concepto original de la botella meteorológica por <span class="text-sky-400 font-semibold">@ProfeTuerca</span> • Datos climáticos en vivo por Open-Meteo
+    </footer>
+  </div>
+
+  <script>
+    // --- Natural Zones Data of Chile ---
+    const CHILE_ZONES = [
+      {
+        id: 'metropolitana',
+        name: 'Zona Metropolitana',
+        cities: [
+          { name: 'La Florida', lat: -33.5227, lon: -70.5983 },
+          { name: 'La Reina', lat: -33.4442, lon: -70.5372 },
+          { name: 'Pudahuel', lat: -33.4431, lon: -70.7611 },
+          { name: 'Lo Barnechea', lat: -33.3517, lon: -70.5161 },
+          { name: 'Santiago', lat: -33.4569, lon: -70.6483 },
+          { name: 'Huechuraba', lat: -33.3742, lon: -70.6381 },
+          { name: 'Las Condes', lat: -33.4117, lon: -70.5811 }
+        ]
+      },
+      {
+        id: 'norte',
+        name: 'Zona Norte',
+        cities: [
+          { name: 'Arica', lat: -18.4746, lon: -70.2979 },
+          { name: 'Iquique', lat: -20.2208, lon: -70.1431 },
+          { name: 'Calama', lat: -22.4544, lon: -68.9294 },
+          { name: 'Antofagasta', lat: -23.6509, lon: -70.3975 },
+          { name: 'Copiapó', lat: -27.3668, lon: -70.3323 },
+          { name: 'La Serena', lat: -29.9027, lon: -71.2520 },
+          { name: 'Ovalle', lat: -30.5983, lon: -71.2003 }
+        ]
+      },
+      {
+        id: 'centro',
+        name: 'Zona Centro',
+        cities: [
+          { name: 'Valparaíso', lat: -33.0472, lon: -71.6127 },
+          { name: 'Rancagua', lat: -34.1708, lon: -70.7444 },
+          { name: 'San Fernando', lat: -34.5839, lon: -70.9889 },
+          { name: 'Curicó', lat: -34.9828, lon: -71.2394 },
+          { name: 'Talca', lat: -35.4264, lon: -71.6556 }
+        ]
+      },
+      {
+        id: 'sur',
+        name: 'Zona Sur',
+        cities: [
+          { name: 'Chillán', lat: -36.6066, lon: -72.1034 },
+          { name: 'Concepción', lat: -36.8270, lon: -73.0503 },
+          { name: 'Los Ángeles', lat: -37.4697, lon: -72.3536 },
+          { name: 'Temuco', lat: -38.7359, lon: -72.5904 },
+          { name: 'Valdivia', lat: -39.8142, lon: -73.2459 },
+          { name: 'Osorno', lat: -40.5739, lon: -73.1336 },
+          { name: 'Puerto Montt', lat: -41.4693, lon: -72.9424 }
+        ]
+      },
+      {
+        id: 'extremo_sur',
+        name: 'Zona Extremo Sur',
+        cities: [
+          { name: 'Coyhaique', lat: -45.5752, lon: -72.0662 },
+          { name: 'Punta Arenas', lat: -53.1638, lon: -70.9171 },
+          { name: 'Puerto Williams', lat: -54.9333, lon: -67.6167 }
+        ]
+      },
+      {
+        id: 'insular',
+        name: 'Zona Insular',
+        cities: [
+          { name: 'Isla de Pascua', lat: -27.1536, lon: -109.4277 },
+          { name: 'Juan Fernández', lat: -33.6417, lon: -78.8356 },
+          { name: 'Antártica', lat: -62.2014, lon: -58.9644 }
+        ]
+      }
+    ];
+
+    // Day names abbreviation in Spanish
+    const DAY_NAMES = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+
+    // --- State ---
+    let currentCity = { name: "Santiago", country: "Chile", lat: -33.4569, lon: -70.6483 };
+    let activeZoneId = 'metropolitana';
+    let viewMode = '3days'; // 'today' or '3days'
+    let weatherData = null;
+    let refreshSeconds = 60;
+    let timerInterval = null;
+    let canvasAnimationId = null;
+
+    // --- DOM Elements ---
+    const cityInput = document.getElementById('city-search');
+    const searchResults = document.getElementById('search-results');
+    const clearSearchBtn = document.getElementById('clear-search');
+    const currentLocationText = document.getElementById('current-location-text');
+    const refreshTimerEl = document.getElementById('refresh-timer');
+    const skyBg = document.getElementById('sky-background');
+    const sunEl = document.getElementById('sun-element');
+    const lightningOverlay = document.getElementById('lightning-overlay');
+
+    // Bottle DOM Parts
+    const waterUpper = document.getElementById('water-upper');
+    const bottleTopFog = document.getElementById('bottle-top-fog');
+    const bottleFullFog = document.getElementById('bottle-full-fog');
+    const bottleSnowGrid = document.getElementById('bottle-snow-grid');
+    const bubblesContainer = document.getElementById('bubbles-container');
+
+    // TV Card & View Elements
+    const tvCityName = document.getElementById('tv-city-name');
+    const tvWindSpeed = document.getElementById('tv-wind-speed');
+
+    // Forecast View Elements
+    const btnViewToday = document.getElementById('btn-view-today');
+    const btnView3Days = document.getElementById('btn-view-3days');
+    const city3DayHighlight = document.getElementById('city-3day-highlight');
+    const highlightCityName = document.getElementById('highlight-city-name');
+    const highlight3DayGrid = document.getElementById('highlight-3day-grid');
+    const zoneColumnsLabel = document.getElementById('zone-columns-label');
+
+    // Zones DOM
+    const zoneTabs = document.getElementById('zone-tabs');
+    const zoneTitle = document.getElementById('zone-title');
+    const zoneCitiesList = document.getElementById('zone-cities-list');
+
+    // Canvas
+    const canvas = document.getElementById('weather-canvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+
+    // Map WMO codes to bottle state
+    function mapWmoToState(code, temp, windSpeed) {
+      if (temp <= 2 || windSpeed > 45) return 'COLD_WIND';
+      if (code === 0 || code === 1) return 'CLEAR';
+      if (code === 2 || code === 3 || code === 45 || code === 48) return 'CLOUDS';
+      if ((code >= 51 && code <= 67) || (code >= 80 && code <= 82)) return 'RAIN';
+      if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return 'SNOW';
+      if (code >= 95 && code <= 99) return 'STORM_HAIL';
+      return 'CLEAR';
+    }
+
+    function getWeatherIconClass(code) {
+      if (code === 0 || code === 1) return 'fa-sun text-amber-400';
+      if (code === 2 || code === 3) return 'fa-cloud-sun text-sky-300';
+      if (code >= 51 && code <= 67) return 'fa-cloud-rain text-blue-400';
+      if (code >= 71 && code <= 77) return 'fa-snowflake text-indigo-200';
+      if (code >= 95) return 'fa-bolt-lightning text-yellow-400';
+      return 'fa-cloud text-slate-300';
+    }
+
+    // Canvas particle engine
+    function resizeCanvas() {
+      if (!canvas) return;
+      canvas.width = canvas.parentElement.clientWidth;
+      canvas.height = canvas.parentElement.clientHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+
+    function initParticles(type) {
+      particles = [];
+      const count = type === 'STORM_HAIL' ? 120 : type === 'RAIN' ? 90 : type === 'SNOW' ? 80 : type === 'COLD_WIND' ? 40 : 0;
+      for (let i = 0; i < count; i++) {
+        particles.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          length: Math.random() * 15 + 10,
+          speed: Math.random() * 10 + 5,
+          radius: Math.random() * 3 + 2,
+          opacity: Math.random() * 0.7 + 0.3,
+          vx: type === 'COLD_WIND' ? Math.random() * 6 + 4 : (Math.random() - 0.5) * 2
+        });
+      }
+    }
+
+    function animateParticles(type) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      if (type === 'CLEAR') return;
+
+      particles.forEach(p => {
+        ctx.beginPath();
+        if (type === 'RAIN' || type === 'STORM_HAIL') {
+          ctx.strokeStyle = `rgba(186, 230, 253, ${p.opacity})`;
+          ctx.lineWidth = 1.5;
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + p.vx, p.y + p.length);
+          ctx.stroke();
+
+          p.y += p.speed;
+          p.x += p.vx;
+          if (p.y > canvas.height) {
+            p.y = -20;
+            p.x = Math.random() * canvas.width;
+          }
+        } else if (type === 'SNOW') {
+          ctx.fillStyle = `rgba(255, 255, 255, ${p.opacity})`;
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          p.y += p.speed * 0.3;
+          p.x += Math.sin(p.y * 0.05);
+          if (p.y > canvas.height) {
+            p.y = -10;
+            p.x = Math.random() * canvas.width;
+          }
+        } else if (type === 'COLD_WIND') {
+          ctx.strokeStyle = `rgba(255, 255, 255, ${p.opacity * 0.4})`;
+          ctx.lineWidth = 1;
+          ctx.moveTo(p.x, p.y);
+          ctx.lineTo(p.x + p.length * 2, p.y);
+          ctx.stroke();
+
+          p.x += p.vx;
+          if (p.x > canvas.width) {
+            p.x = -50;
+            p.y = Math.random() * canvas.height;
+          }
+        }
+      });
+
+      canvasAnimationId = requestAnimationFrame(() => animateParticles(type));
+    }
+
+    // --- Render Bottle Visuals ---
+    function applyBottleState(state) {
+      waterUpper.style.height = '0%';
+      bottleTopFog.style.opacity = '0';
+      bottleFullFog.style.opacity = '0';
+      bottleSnowGrid.style.opacity = '0';
+      bubblesContainer.innerHTML = '';
+      lightningOverlay.style.opacity = '0';
+      skyBg.className = 'relative w-full h-[60%] flex flex-col justify-between p-4 overflow-hidden ';
+
+      if (canvasAnimationId) cancelAnimationFrame(canvasAnimationId);
+      resizeCanvas();
+
+      switch(state) {
+        case 'CLEAR':
+          skyBg.classList.add('sky-sunny');
+          sunEl.style.display = 'block';
+          break;
+
+        case 'RAIN':
+          skyBg.classList.add('sky-rainy');
+          sunEl.style.display = 'none';
+          waterUpper.style.height = '65%';
+          initParticles('RAIN');
+          animateParticles('RAIN');
+          break;
+
+        case 'STORM_HAIL':
+          skyBg.classList.add('sky-stormy');
+          sunEl.style.display = 'none';
+          waterUpper.style.height = '85%';
+          lightningOverlay.style.opacity = '0.7';
+          setTimeout(() => { lightningOverlay.style.opacity = '0'; }, 200);
+
+          for (let i = 0; i < 15; i++) {
+            const b = document.createElement('div');
+            b.className = 'absolute rounded-full bg-white/60 animate-bounce';
+            const size = Math.random() * 12 + 6;
+            b.style.width = `${size}px`;
+            b.style.height = `${size}px`;
+            b.style.left = `${Math.random() * 80 + 10}%`;
+            b.style.bottom = `${Math.random() * 80}%`;
+            b.style.animationDuration = `${Math.random() * 1.5 + 0.8}s`;
+            bubblesContainer.appendChild(b);
+          }
+          initParticles('STORM_HAIL');
+          animateParticles('STORM_HAIL');
+          break;
+
+        case 'COLD_WIND':
+          skyBg.classList.add('sky-cold');
+          sunEl.style.display = 'block';
+          bottleFullFog.style.opacity = '1';
+          initParticles('COLD_WIND');
+          animateParticles('COLD_WIND');
+          break;
+
+        case 'CLOUDS':
+          skyBg.classList.add('sky-cloudy');
+          sunEl.style.display = 'none';
+          bottleTopFog.style.opacity = '1';
+          break;
+
+        case 'SNOW':
+          skyBg.classList.add('sky-snowy');
+          sunEl.style.display = 'none';
+          bottleSnowGrid.style.opacity = '1';
+          initParticles('SNOW');
+          animateParticles('SNOW');
+          break;
+      }
+    }
+
+    // --- Fetch Weather for Main City & 3-Day Card ---
+    async function fetchWeather(lat, lon) {
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,weathercode&forecast_days=4&timezone=auto`);
+        const data = await res.json();
+        
+        if (data && data.current_weather) {
+          weatherData = data.current_weather;
+          const wind = Math.round(weatherData.windspeed);
+          const temp = Math.round(weatherData.temperature);
+          const code = weatherData.weathercode;
+
+          tvCityName.textContent = currentCity.name;
+          tvWindSpeed.textContent = wind;
+          currentLocationText.querySelector('span').textContent = `${currentCity.name}${currentCity.country ? ', ' + currentCity.country : ''}`;
+
+          const state = mapWmoToState(code, temp, wind);
+          applyBottleState(state);
+
+          // Populate Highlight 3-Day Card
+          if (data.daily) {
+            renderHighlight3DayCard(data.daily);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching weather:", err);
+      }
+    }
+
+    // Render Santiago or Selected City 3-Day TV Graphic Card
+    function renderHighlight3DayCard(dailyData) {
+      highlightCityName.textContent = `${currentCity.name} - PRÓXIMOS 3 DÍAS`;
+      highlight3DayGrid.innerHTML = '';
+
+      const dates = dailyData.time || [];
+      const maxTemps = dailyData.temperature_2m_max || [];
+      const codes = dailyData.weathercode || [];
+
+      // Take next 3 days (index 1, 2, 3)
+      for (let i = 1; i <= 3; i++) {
+        if (!dates[i]) break;
+        const d = new Date(dates[i] + 'T00:00:00');
+        const dayName = DAY_NAMES[d.getDay()];
+        const maxT = Math.round(maxTemps[i]);
+        const iconClass = getWeatherIconClass(codes[i]);
+        const bgStyleClass = i === 1 ? 'tv-day-card-1' : i === 2 ? 'tv-day-card-2' : 'tv-day-card-3';
+
+        const col = document.createElement('div');
+        col.className = `${bgStyleClass} rounded-2xl p-3 flex flex-col items-center justify-between shadow-lg text-white text-center border border-white/20`;
+        col.innerHTML = `
+          <div class="text-3xl sm:text-4xl my-2 drop-shadow">
+            <i class="fa-solid ${iconClass}"></i>
+          </div>
+          <span class="font-fredoka text-xs sm:text-sm font-bold uppercase tracking-wider mb-1">${dayName}</span>
+          <div class="bg-black/20 rounded-xl px-2 py-1 w-full">
+            <span class="font-fredoka text-xl sm:text-2xl font-extrabold drop-shadow">${maxT}°</span>
+          </div>
+        `;
+        highlight3DayGrid.appendChild(col);
+      }
+    }
+
+    // --- Render Zones Menu Tabs & Data ---
+    function renderZoneTabs() {
+      zoneTabs.innerHTML = '';
+      CHILE_ZONES.forEach(zone => {
+        const btn = document.createElement('button');
+        const isActive = zone.id === activeZoneId;
+        btn.className = `px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+          isActive 
+            ? 'bg-sky-500 text-white shadow-lg shadow-sky-500/30' 
+            : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700/80'
+        }`;
+        btn.textContent = zone.name;
+        btn.addEventListener('click', () => {
+          activeZoneId = zone.id;
+          renderZoneTabs();
+          loadZoneData(zone);
+        });
+        zoneTabs.appendChild(btn);
+      });
+    }
+
+    async function loadZoneData(zone) {
+      zoneTitle.textContent = zone.name;
+      zoneCitiesList.innerHTML = '<div class="p-4 text-center text-xs text-slate-400"><i class="fa-solid fa-spinner animate-spin"></i> Cargando pronóstico de la zona...</div>';
+
+      const lats = zone.cities.map(c => c.lat).join(',');
+      const lons = zone.cities.map(c => c.lon).join(',');
+
+      try {
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&daily=temperature_2m_max,temperature_2m_min,weathercode&forecast_days=4&timezone=auto`);
+        const data = await res.json();
+
+        zoneCitiesList.innerHTML = '';
+        const results = Array.isArray(data) ? data : [data];
+
+        // Determine next 3 days labels
+        let dayLabels = [];
+        if (results[0] && results[0].daily && results[0].daily.time) {
+          dayLabels = results[0].daily.time.slice(1, 4).map(t => {
+            const d = new Date(t + 'T00:00:00');
+            return DAY_NAMES[d.getDay()];
+          });
+        }
+
+        if (viewMode === '3days') {
+          zoneColumnsLabel.textContent = dayLabels.join('  •  ');
+        } else {
+          zoneColumnsLabel.textContent = 'Mín / Máx';
+        }
+
+        zone.cities.forEach((city, index) => {
+          const cityData = results[index];
+          const row = document.createElement('div');
+          row.className = 'flex items-center justify-between px-3 sm:px-4 py-2.5 hover:bg-slate-800/60 cursor-pointer transition-colors';
+
+          if (viewMode === 'today') {
+            let minTemp = '--';
+            let maxTemp = '--';
+            let iconClass = 'fa-sun text-amber-400';
+
+            if (cityData && cityData.daily) {
+              minTemp = Math.round(cityData.daily.temperature_2m_min[0]);
+              maxTemp = Math.round(cityData.daily.temperature_2m_max[0]);
+              iconClass = getWeatherIconClass(cityData.daily.weathercode[0]);
+            }
+
+            row.innerHTML = `
+              <div class="flex items-center gap-3 w-1/2">
+                <span class="font-bold text-sm text-slate-100 font-fredoka">${city.name}</span>
+              </div>
+              <div class="flex items-center justify-end gap-4 w-1/2 text-right">
+                <i class="fa-solid ${iconClass} text-base"></i>
+                <div class="flex items-center gap-2 font-fredoka text-sm">
+                  <span class="text-blue-300">${minTemp}°</span>
+                  <span class="text-slate-600">/</span>
+                  <span class="text-amber-300 font-bold">${maxTemp}°</span>
+                </div>
+              </div>
+            `;
+          } else {
+            // 3 DAYS VIEW (matching television broadcast photos)
+            let dayColsHTML = '';
+            if (cityData && cityData.daily) {
+              const maxTemps = cityData.daily.temperature_2m_max;
+              const codes = cityData.daily.weathercode;
+
+              for (let dIdx = 1; dIdx <= 3; dIdx++) {
+                const maxT = Math.round(maxTemps[dIdx]);
+                const iconClass = getWeatherIconClass(codes[dIdx]);
+                const bgClass = dIdx === 1 ? 'bg-sky-500/20 text-sky-200' : dIdx === 2 ? 'bg-indigo-500/20 text-indigo-200' : 'bg-pink-500/20 text-pink-200';
+                dayColsHTML += `
+                  <div class="flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg ${bgClass} font-fredoka text-xs sm:text-sm">
+                    <span class="font-bold text-white">${maxT}°</span>
+                    <i class="fa-solid ${iconClass}"></i>
+                  </div>
+                `;
+              }
+            }
+
+            row.innerHTML = `
+              <div class="w-1/3">
+                <span class="font-bold text-xs sm:text-sm text-slate-100 font-fredoka truncate block">${city.name}</span>
+              </div>
+              <div class="w-2/3 grid grid-cols-3 gap-1.5 text-center">
+                ${dayColsHTML}
+              </div>
+            `;
+          }
+
+          row.addEventListener('click', () => {
+            currentCity = { name: city.name, country: 'Chile', lat: city.lat, lon: city.lon };
+            resetTimer();
+            fetchWeather(city.lat, city.lon);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          });
+
+          zoneCitiesList.appendChild(row);
+        });
+
+      } catch (err) {
+        console.error("Zone fetch error:", err);
+        zoneCitiesList.innerHTML = '<div class="p-3 text-center text-xs text-red-400">Error al cargar datos de la zona</div>';
+      }
+    }
+
+    // Toggle view mode
+    btnViewToday.addEventListener('click', () => {
+      viewMode = 'today';
+      btnViewToday.className = 'flex-1 sm:flex-none px-4 py-1.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-white shadow-md';
+      btnView3Days.className = 'flex-1 sm:flex-none px-4 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200';
+      city3DayHighlight.classList.add('hidden');
+      const currentZone = CHILE_ZONES.find(z => z.id === activeZoneId);
+      if (currentZone) loadZoneData(currentZone);
+    });
+
+    btnView3Days.addEventListener('click', () => {
+      viewMode = '3days';
+      btnView3Days.className = 'flex-1 sm:flex-none px-4 py-1.5 rounded-xl text-xs font-bold transition-all bg-sky-500 text-white shadow-md';
+      btnViewToday.className = 'flex-1 sm:flex-none px-4 py-1.5 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200';
+      city3DayHighlight.classList.remove('hidden');
+      const currentZone = CHILE_ZONES.find(z => z.id === activeZoneId);
+      if (currentZone) loadZoneData(currentZone);
+    });
+
+    // --- Search Geocoding ---
+    async function searchCities(query) {
+      if (!query || query.length < 2) {
+        searchResults.classList.add('hidden');
+        return;
+      }
+
+      try {
+        const res = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=8&language=es&format=json`);
+        const data = await res.json();
+
+        if (data.results && data.results.length > 0) {
+          searchResults.innerHTML = '';
+          data.results.forEach(city => {
+            const item = document.createElement('button');
+            item.className = 'w-full px-4 py-3 text-left hover:bg-slate-700/70 flex items-center justify-between transition-colors text-sm';
+            const admin = city.admin1 ? `, ${city.admin1}` : '';
+            const country = city.country ? ` (${city.country})` : '';
+
+            item.innerHTML = `
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-location-dot text-sky-400 text-xs"></i>
+                <span class="font-semibold text-slate-100">${city.name}</span>
+                <span class="text-xs text-slate-400">${admin}${country}</span>
+              </div>
+              <i class="fa-solid fa-chevron-right text-xs text-slate-500"></i>
+            `;
+
+            item.addEventListener('click', () => {
+              currentCity = { name: city.name, country: city.country || '', lat: city.latitude, lon: city.longitude };
+              cityInput.value = '';
+              clearSearchBtn.classList.add('hidden');
+              searchResults.classList.add('hidden');
+              resetTimer();
+              fetchWeather(currentCity.lat, currentCity.lon);
+            });
+
+            searchResults.appendChild(item);
+          });
+          searchResults.classList.remove('hidden');
+        } else {
+          searchResults.innerHTML = '<div class="p-3 text-xs text-slate-400 text-center">No se encontraron ciudades o pueblos</div>';
+          searchResults.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error("Geocoding error:", err);
+      }
+    }
+
+    // --- Timer ---
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      refreshSeconds = 60;
+      refreshTimerEl.textContent = refreshSeconds;
+
+      timerInterval = setInterval(() => {
+        refreshSeconds--;
+        refreshTimerEl.textContent = refreshSeconds;
+        if (refreshSeconds <= 0) {
+          fetchWeather(currentCity.lat, currentCity.lon);
+          refreshSeconds = 60;
+        }
+      }, 1000);
+    }
+
+    function resetTimer() {
+      startTimer();
+    }
+
+    // --- Search Listeners ---
+    let debounceTimeout = null;
+    cityInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      if (val.length > 0) {
+        clearSearchBtn.classList.remove('hidden');
+      } else {
+        clearSearchBtn.classList.add('hidden');
+        searchResults.classList.add('hidden');
+      }
+
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        searchCities(val);
+      }, 300);
+    });
+
+    clearSearchBtn.addEventListener('click', () => {
+      cityInput.value = '';
+      clearSearchBtn.classList.add('hidden');
+      searchResults.classList.add('hidden');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!cityInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.classList.add('hidden');
+      }
+    });
+
+    // --- Initialization ---
+    window.onload = () => {
+      resizeCanvas();
+      fetchWeather(currentCity.lat, currentCity.lon);
+      renderZoneTabs();
+      loadZoneData(CHILE_ZONES[0]);
+      startTimer();
+    };
+  </script>
+</body>
+</html>
